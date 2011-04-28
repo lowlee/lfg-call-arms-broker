@@ -1,0 +1,22 @@
+## Interface: 40100
+## Title : LFG Call to Arms Broker
+## Name: LFGCalltoArmsBroker
+## Author: Buranshe
+## Version: 0.9
+## SavedVariables:
+
+## Notes: Provides a quick display for the LFG Call to Arms
+
+## OptionalDeps: Ace3, CallbackHandler-1.0, LibDataBroker-1.1
+
+## X-Category: Plugins - Data Broker
+
+libs\LibStub\LibStub.lua
+
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
+libs\LibDataBroker-1.1.lua
+
+Core.lua
