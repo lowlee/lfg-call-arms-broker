@@ -83,12 +83,14 @@ function dataobj:UpdateText()
 end
 
 function dataobj:OnTooltipShow()
+	self:AddLine("LFG Call to Arms")
+	local greyColor = { 0.6, 0.6, 0.6 }
 	local TANK = calculateTexture("TANK", 12)
 	local HEAL = calculateTexture("HEALER", 12)
 	local DPS = calculateTexture("DAMAGER", 12)
 	if #dataobj.lfginfo > 0 then
 		for _,dungeonInfo in ipairs(dataobj.lfginfo) do
-			self:AddLine(dungeonInfo.name, 0.6, 0.6, 0.6)
+			self:AddLine(dungeonInfo.name, unpack(greyColor))
 			if dungeonInfo.tank then
 				self:AddLine("  " .. TANK .. " Tank")
 			end
@@ -100,7 +102,7 @@ function dataobj:OnTooltipShow()
 			end
 		end
 	else
-		self:AddLine("No Call to Arms is available.")
+		self:AddLine("No Call to Arms is available.", unpack(greyColor))
 	end
 end
 
