@@ -1,13 +1,15 @@
 local LDB = LibStub("LibDataBroker-1.1")
-local dataobj = LDB:NewDataObject("LFG Call To Arms")
+local dataobj = LDB:NewDataObject("LFG Call To Arms", {
+	type = "data source",
+	text = " Loading",
+	icon = "Interface\\LFGFrame\\LFG-Eye",
+	iconCoords = {0.023, 0.102, 0.043, 0.199}
+})
 
 local GROUP_TYPE_NONE = 1
 local GROUP_TYPE_PARTY = 2
 local GROUP_TYPE_RAID = 3
 
-dataobj.type = "data source"
-dataobj.icon = "Interface\\LFGFrame\\LFG-Eye"
-dataobj.iconCoords = {0.023, 0.102, 0.043, 0.199}
 dataobj.lfginfo = {}
 dataobj.group_type = GROUP_TYPE_NONE
 
