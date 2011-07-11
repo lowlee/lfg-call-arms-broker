@@ -36,6 +36,13 @@ LibStub("AceTimer-3.0"):Embed(dataobj)
 
 local defaults = {
 	profile = {
+	},
+	char = {
+		roles = {
+			tank = true,
+			healer = true,
+			damager = true
+		}
 	}
 }
 dataobj:RegisterEvent("ADDON_LOADED", function (event, name)
@@ -116,13 +123,13 @@ function dataobj:UpdateText()
 			end
 		end
 		local textures = {}
-		if hasTank then
+		if hasTank and self.db.char.roles.tank then
 			table.insert(textures, TANK_TEXTURE)
 		end
-		if hasHeal then
+		if hasHeal and self.db.char.roles.healer then
 			table.insert(textures, HEAL_TEXTURE)
 		end
-		if hasDPS then
+		if hasDPS and self.db.char.roles.damager then
 			table.insert(textures, DPS_TEXTURE)
 		end
 		if #textures > 0 then
@@ -149,6 +156,7 @@ function dataobj:PARTY_MEMBERS_CHANGED()
 end
 
 function dataobj:OnTooltipShow()
+	-- reminder: self is the tooltip
 	self:AddLine("LFG Call to Arms")
 	local greyColor = { 0.6, 0.6, 0.6 }
 	if dataobj.group_type == GROUP_TYPE_NONE then
@@ -159,13 +167,13 @@ function dataobj:OnTooltipShow()
 			for _,dungeonInfo in ipairs(dataobj.lfginfo) do
 				self:AddLine(dungeonInfo.name, unpack(greyColor))
 				if dungeonInfo.tank then
-					self:AddLine("  " .. TANK .. " Tank")
+					self:AddLine("  " .. TANK .. " Tank", unpack(dataobj.db.char.roles.tank and {} or greyColor))
 				end
 				if dungeonInfo.heal then
-					self:AddLine("  " .. HEAL .. " Healer")
+					self:AddLine("  " .. HEAL .. " Healer", unpack(dataobj.db.char.roles.healer and {} or greyColor))
 				end
 				if dungeonInfo.dps then
-					self:AddLine("  " .. DPS .. " DPS")
+					self:AddLine("  " .. DPS .. " DPS", unpack(dataobj.db.char.roles.damager and {} or greyColor))
 				end
 			end
 		else
@@ -178,17 +186,73 @@ function dataobj:OnTooltipShow()
 	end
 end
 
+local function copyDefaults(dest, source)
+	for k,v in pairs(dest) do
+		if type(v) == "table" then
+			copyDefaults(v, source[k])
+		else
+			dest[k] = source[k]
+		end
+	end
+end
+
 function dataobj:SetDefaultOptions()
 	self.db:ResetProfile()
+	copyDefaults(self.db.char, defaults.char)
 	LibStub("AceConfigRegistry-3.0"):NotifyChange(uiAddonName)
 	self:UpdateText()
 end
 
 function dataobj:AceConfig3Options()
+	--local rolesIcon = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES"
+	local texSize = 20
+	local canBeTank, canBeHealer, canBeDamager = UnitGetAvailableRoles("player")
 	return {
 		name = uiAddonName,
 		type = "group",
 		args = {
+			roles = {
+				name = "Roles",
+				type = "group",
+				inline = true,
+				order = 1,
+				get = function(info) return info.arg and self.db.char.roles[info[#info]] end,
+				set = function(info, val)
+					self.db.char.roles[info[#info]] = val
+					self:UpdateText()
+				end,
+				args = {
+					description = {
+						name = "What roles are you interested in seeing?\n", -- newline for spacing reasons
+						type = "description",
+						order = 0
+					},
+					tank = {
+						name = calculateTexture("TANK", texSize),
+						type = "toggle",
+						width = "half",
+						order = 1,
+						disabled = function() return not canBeTank end,
+						arg = canBeTank
+					},
+					healer = {
+						name = calculateTexture("HEALER", texSize),
+						type = "toggle",
+						width = "half",
+						order = 2,
+						disabled = function() return not canBeHealer end,
+						arg = canBeHealer
+					},
+					damager = {
+						name = calculateTexture("DAMAGER", texSize),
+						type = "toggle",
+						width = "half",
+						order = 3,
+						disabled = function() return not canBeDamager end,
+						arg = canBeDamager
+					}
+				}
+			}
 		}
 	}
 end
