@@ -1,5 +1,8 @@
+local addonName = ...
+local uiAddonName = "LFG Call To Arms"
+
 local LDB = LibStub("LibDataBroker-1.1")
-local dataobj = LDB:NewDataObject("LFG Call To Arms", {
+local dataobj = LDB:NewDataObject(uiAddonName, {
 	type = "data source",
 	text = " Loading",
 	icon = "Interface\\LFGFrame\\LFG-Eye",
@@ -30,6 +33,39 @@ local DPS_TEXTURE = calculateTexture("DAMAGER", 16 , -2)
 
 LibStub("AceEvent-3.0"):Embed(dataobj)
 LibStub("AceTimer-3.0"):Embed(dataobj)
+
+local defaults = {
+	profile = {
+	}
+}
+dataobj:RegisterEvent("ADDON_LOADED", function (event, name)
+	if name == addonName then
+		dataobj:OnInitialize()
+		dataobj:UnregisterEvent("ADDON_LOADED")
+	end
+end)
+
+function dataobj:OnInitialize()
+	self.db = LibStub("AceDB-3.0"):New("LFGCallToArmsBrokerDB", defaults, true)
+
+	local AceConfig = LibStub("AceConfig-3.0")
+	AceConfig:RegisterOptionsTable(uiAddonName, function () return self:AceConfig3Options() end)
+	local interfaceFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(uiAddonName)
+	interfaceFrame.default = function() self:SetDefaultOptions() end
+
+	self:RegisterEvent("LFG_LOCK_INFO_RECEIVED", "UpdateText")
+	self:RegisterEvent("PARTY_MEMBERS_CHANGED", "GroupMakeupChanged")
+	self:RegisterEvent("RAID_ROSTER_UPDATE", "GroupMakeupChanged")
+
+	self:UpdateText()
+	self:ScheduleRepeatingTimer(function() RequestLFDPlayerLockInfo() end, 60)
+end
+
+function dataobj:OnClick(b)
+	if b == "RightButton" then
+		InterfaceOptionsFrame_OpenToCategory(uiAddonName)
+	end
+end
 
 local function isRandomDungeonDisplayable(id)
 	local name, typeID, minLevel, maxLevel, _, _, _, expansionLevel = GetLFGDungeonInfo(id);
@@ -142,9 +178,17 @@ function dataobj:OnTooltipShow()
 	end
 end
 
-dataobj:RegisterEvent("LFG_LOCK_INFO_RECEIVED", "UpdateText")
-dataobj:RegisterEvent("PARTY_MEMBERS_CHANGED", "GroupMakeupChanged")
-dataobj:RegisterEvent("RAID_ROSTER_UPDATE", "GroupMakeupChanged")
+function dataobj:SetDefaultOptions()
+	self.db:ResetProfile()
+	LibStub("AceConfigRegistry-3.0"):NotifyChange(uiAddonName)
+	self:UpdateText()
+end
 
-dataobj:UpdateText()
-dataobj:ScheduleRepeatingTimer(function() RequestLFDPlayerLockInfo() end, 60)
+function dataobj:AceConfig3Options()
+	return {
+		name = uiAddonName,
+		type = "group",
+		args = {
+		}
+	}
+end

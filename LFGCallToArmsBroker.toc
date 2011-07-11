@@ -3,7 +3,7 @@
 ## Name: LFGCalltoArmsBroker
 ## Author: Buranshe
 ## Version: 0.9
-## SavedVariables:
+## SavedVariables: LFGCallToArmsBrokerDB
 
 ## Notes: Provides a quick display for the LFG Call to Arms
 
