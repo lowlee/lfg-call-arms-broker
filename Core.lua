@@ -291,24 +291,32 @@ function dataobj:AceConfig3Options()
 					}
 				}
 			},
-			soundDesc = {
-				name = "Play a sound when the available roles change:",
-				type = "description",
-				order = 2,
-			},
-			soundKey = {
+			sound = {
 				name = "Sound",
-				desc = "Sound to play when the available roles change",
-				type = "select",
-				order = 3,
-				dialogControl = "LSM30_Sound",
-				values = LSM:HashTable("sound"),
-			},
-			playSoundWhenMuted = {
-				name = "Play sound when muted",
-				desc = "Play sound even when sound effects are turned off",
-				type = "toggle",
-				order = 4,
+				type = "group",
+				inline = true,
+				order = 2,
+				args = {
+					soundDesc = {
+						name = "Play a sound when the available roles change:",
+						type = "description",
+						order = 1,
+					},
+					soundKey = {
+						name = "Sound",
+						desc = "Sound to play when the available roles change",
+						type = "select",
+						order = 2,
+						dialogControl = "LSM30_Sound",
+						values = LSM:HashTable("sound"),
+					},
+					playSoundWhenMuted = {
+						name = "Play sound when muted",
+						desc = "Play sound even when sound effects are turned off",
+						type = "toggle",
+						order = 3,
+					},
+				},
 			},
 		}
 	}
