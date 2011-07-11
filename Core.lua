@@ -16,16 +16,19 @@ local GROUP_TYPE_RAID = 3
 dataobj.lfginfo = {}
 dataobj.group_type = GROUP_TYPE_NONE
 
-local function calculateTexture(role, size, offset)
+local function calculateTexture(role, size, offset, tintRed, tintGreen, tintBlue)
 	size = size or 16
 	offset = offset or 0
+	tintRed = tintRed or 255
+	tintGreen = tintGreen or 255
+	tintBlue = tintBlue or 255
 	local SIZE = 64
 	local x1, x2, y1, y2 = GetTexCoordsForRoleSmallCircle(role)
 	x1 = x1 * SIZE
 	x2 = x2 * SIZE
 	y1 = y1 * SIZE
 	y2 = y2 * SIZE
-	return ("|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:%d:%d:0:%d:%d:%d:%d:%d:%d:%d|t"):format(size, size, offset, SIZE, SIZE, x1, x2, y1, y2)
+	return ("|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:%d:%d:0:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d|t"):format(size, size, offset, SIZE, SIZE, x1, x2, y1, y2, tintRed, tintGreen, tintBlue)
 end
 local TANK_TEXTURE = calculateTexture("TANK", 16, -2)
 local HEAL_TEXTURE = calculateTexture("HEALER", 16, -2)
@@ -155,25 +158,34 @@ function dataobj:PARTY_MEMBERS_CHANGED()
 	self:UpdateText()
 end
 
+local TANK_ICON = calculateTexture("TANK", 12)
+local TANK_ICON_DISABLED = calculateTexture("TANK", 12, nil, 155, 155, 155)
+local HEAL_ICON = calculateTexture("HEALER", 12)
+local HEAL_ICON_DISABLED = calculateTexture("HEALER", 12, nil, 155, 155, 155)
+local DPS_ICON = calculateTexture("DAMAGER", 12)
+local DPS_ICON_DISABLED = calculateTexture("DAMAGER", 12, nil, 155, 155, 155)
 function dataobj:OnTooltipShow()
 	-- reminder: self is the tooltip
 	self:AddLine("LFG Call to Arms")
 	local greyColor = { 0.6, 0.6, 0.6 }
 	if dataobj.group_type == GROUP_TYPE_NONE then
-		local TANK = calculateTexture("TANK", 12)
-		local HEAL = calculateTexture("HEALER", 12)
-		local DPS = calculateTexture("DAMAGER", 12)
 		if #dataobj.lfginfo > 0 then
 			for _,dungeonInfo in ipairs(dataobj.lfginfo) do
 				self:AddLine(dungeonInfo.name, unpack(greyColor))
 				if dungeonInfo.tank then
-					self:AddLine("  " .. TANK .. " Tank", unpack(dataobj.db.char.roles.tank and {} or greyColor))
+					local icon = dataobj.db.char.roles.tank and TANK_ICON or TANK_ICON_DISABLED
+					local tint = dataobj.db.char.roles.tank and {} or greyColor
+					self:AddLine("  " .. icon .. " Tank", unpack(tint))
 				end
 				if dungeonInfo.heal then
-					self:AddLine("  " .. HEAL .. " Healer", unpack(dataobj.db.char.roles.healer and {} or greyColor))
+					local icon = dataobj.db.char.roles.healer and HEAL_ICON or HEAL_ICON_DISABLED
+					local tint = dataobj.db.char.roles.healer and {} or greyColor
+					self:AddLine("  " .. icon .. " Healer", unpack(tint))
 				end
 				if dungeonInfo.dps then
-					self:AddLine("  " .. DPS .. " DPS", unpack(dataobj.db.char.roles.damager and {} or greyColor))
+					local icon = dataobj.db.char.roles.damager and DPS_ICON or DPS_ICON_DISABLED
+					local tint = dataobj.db.char.roles.damager and {} or greyColor
+					self:AddLine("  " .. icon .. " DPS", unpack(tint))
 				end
 			end
 		else
@@ -207,6 +219,7 @@ function dataobj:AceConfig3Options()
 	--local rolesIcon = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES"
 	local texSize = 20
 	local canBeTank, canBeHealer, canBeDamager = UnitGetAvailableRoles("player")
+	local greyTint = {155, 155, 155}
 	return {
 		name = uiAddonName,
 		type = "group",
@@ -228,27 +241,27 @@ function dataobj:AceConfig3Options()
 						order = 0
 					},
 					tank = {
-						name = calculateTexture("TANK", texSize),
+						name = calculateTexture("TANK", texSize, nil, unpack(canBeTank and {} or greyTint)),
 						type = "toggle",
 						width = "half",
 						order = 1,
-						disabled = function() return not canBeTank end,
+						disabled = not canBeTank,
 						arg = canBeTank
 					},
 					healer = {
-						name = calculateTexture("HEALER", texSize),
+						name = calculateTexture("HEALER", texSize, nil, unpack(canBeHealer and {} or greyTint)),
 						type = "toggle",
 						width = "half",
 						order = 2,
-						disabled = function() return not canBeHealer end,
+						disabled = not canBeHealer,
 						arg = canBeHealer
 					},
 					damager = {
-						name = calculateTexture("DAMAGER", texSize),
+						name = calculateTexture("DAMAGER", texSize, nil, unpack(canBeDamager and {} or greyTint)),
 						type = "toggle",
 						width = "half",
 						order = 3,
-						disabled = function() return not canBeDamager end,
+						disabled = not canBeDamager,
 						arg = canBeDamager
 					}
 				}
