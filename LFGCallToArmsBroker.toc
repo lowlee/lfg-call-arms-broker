@@ -7,7 +7,7 @@
 
 ## Notes: Provides a quick display for the LFG Call to Arms
 
-## OptionalDeps: Ace3, CallbackHandler-1.0, LibDataBroker-1.1
+## OptionalDeps: Ace3, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0
 
 ## X-Category: Plugins - Data Broker
 

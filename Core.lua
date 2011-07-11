@@ -8,6 +8,7 @@ local dataobj = LDB:NewDataObject(uiAddonName, {
 	icon = "Interface\\Icons\\inv_misc_bag_34",
 })
 local LSM = LibStub("LibSharedMedia-3.0")
+local LDBIcon = LibStub("LibDBIcon-1.0")
 
 local GROUP_TYPE_NONE = 1
 local GROUP_TYPE_PARTY = 2
@@ -15,6 +16,26 @@ local GROUP_TYPE_RAID = 3
 
 dataobj.lfginfo = {}
 dataobj.group_type = GROUP_TYPE_NONE
+
+local minimapButton = nil
+local function getMinimapButton()
+	if not minimapButton then
+		-- LibDBIcon-1.0 currently sets the button with the following name
+		minimapButton = _G["LibDBIcon10_" .. uiAddonName]
+		if not minimapButton then
+			-- if that didn't work, try pulling it out of LibDBIcon directly
+			minimapButton = LDBIcon.objects[uiAddonName]
+			-- and make sure we actualy got a Button back
+			if not (minimapButton and minimapButton.GetObjectType and minimapButton:GetObjectType() == "Button") then
+				minimapButton = nil
+			elseif not (minimapButton.icon and minimapButton.icon.GetObjectType and minimapButton.icon:GetObjectType() == "Texture") then
+				-- also make sure it has a .icon property that is a texture
+				minimapButton = nil
+			end
+		end
+	end
+	return minimapButton
+end
 
 local function calculateTexture(role, size, offset, tintRed, tintGreen, tintBlue)
 	size = size or 16
@@ -41,6 +62,9 @@ local defaults = {
 	profile = {
 		soundKey = "None",
 		playSoundWhenMuted = false,
+		minimap = {
+			hide = false
+		},
 	},
 	char = {
 		roles = {
@@ -50,6 +74,7 @@ local defaults = {
 		}
 	}
 }
+
 dataobj:RegisterEvent("ADDON_LOADED", function (event, name)
 	if name == addonName then
 		dataobj:OnInitialize()
@@ -59,6 +84,7 @@ end)
 
 function dataobj:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LFGCallToArmsBrokerDB", defaults, true)
+	LDBIcon:Register(uiAddonName, self, self.db.profile.minimap)
 
 	local AceConfig = LibStub("AceConfig-3.0")
 	AceConfig:RegisterOptionsTable(uiAddonName, function () return self:AceConfig3Options() end)
@@ -107,6 +133,7 @@ function dataobj:UpdateText()
 		damager = false
 	}
 	self.group_type = currentGroupType()
+	local hasValue = false
 	if self.group_type == GROUP_TYPE_NONE then
 		local hasTank, hasHeal, hasDPS
 		for i=1, GetNumRandomDungeons() do
@@ -152,6 +179,7 @@ function dataobj:UpdateText()
 		end
 		if #textures > 0 then
 			dataobj.text = " "..table.concat(textures, " ")
+			hasValue = true
 		else
 			dataobj.text = " None"
 		end
@@ -168,6 +196,8 @@ function dataobj:UpdateText()
 	else
 		dataobj.text = " In Raid"
 	end
+	local button = getMinimapButton()
+	if button then SetDesaturation(button.icon, not hasValue) end
 end
 
 function dataobj:GroupMakeupChanged()
@@ -221,6 +251,16 @@ function dataobj:OnTooltipShow()
 	end
 end
 
+function dataobj:SetShowsMinimap(bool)
+	self.db.profile.minimap.hide = bool
+	if bool then
+		LDBIcon:Hide(uiAddonName)
+	else
+		LDBIcon:Show(uiAddonName)
+		self:UpdateText() -- in case the minimap button needs desaturating
+	end
+end
+
 local function copyDefaults(dest, source)
 	for k,v in pairs(dest) do
 		if type(v) == "table" then
@@ -235,6 +275,7 @@ function dataobj:SetDefaultOptions()
 	self.db:ResetProfile()
 	copyDefaults(self.db.char, defaults.char)
 	LibStub("AceConfigRegistry-3.0"):NotifyChange(uiAddonName)
+	LDBIcon:Refresh(uiAddonName, self.db.profile.minimap)
 	self:UpdateText()
 end
 
@@ -317,6 +358,13 @@ function dataobj:AceConfig3Options()
 						order = 3,
 					},
 				},
+			},
+			showMinimap = {
+				name = "Show Minimap Icon",
+				type = "toggle",
+				order = 5,
+				get = function(info) return not self.db.profile.minimap.hide end,
+				set = function(info, val) self:SetShowsMinimap(not val) end
 			},
 		}
 	}
