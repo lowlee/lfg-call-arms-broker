@@ -74,7 +74,9 @@ function dataobj:OnInitialize()
 end
 
 function dataobj:OnClick(b)
-	if b == "RightButton" then
+	if b == "LeftButton" then
+		ToggleLFDParentFrame()
+	elseif b == "RightButton" then
 		InterfaceOptionsFrame_OpenToCategory(uiAddonName)
 	end
 end
