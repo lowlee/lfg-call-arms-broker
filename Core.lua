@@ -8,6 +8,7 @@ local dataobj = LDB:NewDataObject(uiAddonName, {
 	icon = "Interface\\LFGFrame\\LFG-Eye",
 	iconCoords = {0.023, 0.102, 0.043, 0.199}
 })
+local LSM = LibStub("LibSharedMedia-3.0")
 
 local GROUP_TYPE_NONE = 1
 local GROUP_TYPE_PARTY = 2
@@ -39,6 +40,8 @@ LibStub("AceTimer-3.0"):Embed(dataobj)
 
 local defaults = {
 	profile = {
+		soundKey = "None",
+		playSoundWhenMuted = false,
 	},
 	char = {
 		roles = {
@@ -67,8 +70,8 @@ function dataobj:OnInitialize()
 	self:RegisterEvent("PARTY_MEMBERS_CHANGED", "GroupMakeupChanged")
 	self:RegisterEvent("RAID_ROSTER_UPDATE", "GroupMakeupChanged")
 
-	self:UpdateText()
 	self:ScheduleRepeatingTimer(function() RequestLFDPlayerLockInfo() end, 60)
+	RequestLFDPlayerLockInfo()
 end
 
 function dataobj:OnClick(b)
@@ -94,7 +97,14 @@ local function currentGroupType()
 end
 
 function dataobj:UpdateText()
+	-- figure out what roles we were displaying before
+	local oldRoles = self.lfginfo.roles or { tank = true, healer = true, damager = true }
 	table.wipe(self.lfginfo)
+	self.lfginfo.roles = {
+		tank = false,
+		healer = false,
+		damager = false
+	}
 	self.group_type = currentGroupType()
 	if self.group_type == GROUP_TYPE_NONE then
 		local hasTank, hasHeal, hasDPS
@@ -126,19 +136,31 @@ function dataobj:UpdateText()
 			end
 		end
 		local textures = {}
+		local shouldPlaySound = false
 		if hasTank and self.db.char.roles.tank then
 			table.insert(textures, TANK_TEXTURE)
+			if not oldRoles.tank then shouldPlaySound = true end
 		end
 		if hasHeal and self.db.char.roles.healer then
 			table.insert(textures, HEAL_TEXTURE)
+			if not oldRoles.healer then shouldPlaySound = true end
 		end
 		if hasDPS and self.db.char.roles.damager then
 			table.insert(textures, DPS_TEXTURE)
+			if not oldRoles.damager then shouldPlaySound = true end
 		end
 		if #textures > 0 then
 			dataobj.text = " "..table.concat(textures, " ")
 		else
 			dataobj.text = " None"
+		end
+		self.lfginfo.roles.tank = hasTank
+		self.lfginfo.roles.healer = hasHeal
+		self.lfginfo.roles.damager = hasDPS
+		if shouldPlaySound then
+			local channel = "SFX"
+			if self.db.profile.playSoundWhenMuted then channel = "Master" end
+			PlaySoundFile(LSM:Fetch("sound", self.db.profile.soundKey), channel)
 		end
 	elseif self.group_type == GROUP_TYPE_PARTY then
 		dataobj.text = " In Party"
@@ -223,6 +245,8 @@ function dataobj:AceConfig3Options()
 	return {
 		name = uiAddonName,
 		type = "group",
+		get = function(info) return self.db.profile[info[#info]] end,
+		set = function(info, val) self.db.profile[info[#info]] = val end,
 		args = {
 			roles = {
 				name = "Roles",
@@ -265,7 +289,26 @@ function dataobj:AceConfig3Options()
 						arg = canBeDamager
 					}
 				}
-			}
+			},
+			soundDesc = {
+				name = "Play a sound when the available roles change:",
+				type = "description",
+				order = 2,
+			},
+			soundKey = {
+				name = "Sound",
+				desc = "Sound to play when the available roles change",
+				type = "select",
+				order = 3,
+				dialogControl = "LSM30_Sound",
+				values = LSM:HashTable("sound"),
+			},
+			playSoundWhenMuted = {
+				name = "Play sound when muted",
+				desc = "Play sound even when sound effects are turned off",
+				type = "toggle",
+				order = 4,
+			},
 		}
 	}
 end
