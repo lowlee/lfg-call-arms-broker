@@ -5,8 +5,7 @@ local LDB = LibStub("LibDataBroker-1.1")
 local dataobj = LDB:NewDataObject(uiAddonName, {
 	type = "data source",
 	text = " Loading",
-	icon = "Interface\\LFGFrame\\LFG-Eye",
-	iconCoords = {0.023, 0.102, 0.043, 0.199}
+	icon = "Interface\\Icons\\inv_misc_bag_34",
 })
 local LSM = LibStub("LibSharedMedia-3.0")
 
