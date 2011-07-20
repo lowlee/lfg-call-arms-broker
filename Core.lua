@@ -295,7 +295,7 @@ function dataobj:AceConfig3Options()
 				type = "group",
 				inline = true,
 				order = 1,
-				get = function(info) return info.arg and self.db.char.roles[info[#info]] end,
+				get = function(info) return self.db.char.roles[info[#info]] end,
 				set = function(info, val)
 					self.db.char.roles[info[#info]] = val
 					self:UpdateText()
@@ -311,24 +311,18 @@ function dataobj:AceConfig3Options()
 						type = "toggle",
 						width = "half",
 						order = 1,
-						disabled = not canBeTank,
-						arg = canBeTank
 					},
 					healer = {
 						name = calculateTexture("HEALER", texSize, nil, unpack(canBeHealer and {} or greyTint)),
 						type = "toggle",
 						width = "half",
 						order = 2,
-						disabled = not canBeHealer,
-						arg = canBeHealer
 					},
 					damager = {
 						name = calculateTexture("DAMAGER", texSize, nil, unpack(canBeDamager and {} or greyTint)),
 						type = "toggle",
 						width = "half",
 						order = 3,
-						disabled = not canBeDamager,
-						arg = canBeDamager
 					}
 				}
 			},
