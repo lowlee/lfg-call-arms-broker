@@ -20,6 +20,10 @@ dataobj.group_type = GROUP_TYPE_NONE
 local minimapButton = nil
 local function getMinimapButton()
 	if not minimapButton then
+		-- Test for LibDBIcon-1.0's new :GetMinimapButton first
+		if LDBIcon.GetMinimapButton then
+			minimapButton = LDBIcon.GetMinimapButton(uiAddonName)
+		end
 		-- LibDBIcon-1.0 currently sets the button with the following name
 		minimapButton = _G["LibDBIcon10_" .. uiAddonName]
 		if not minimapButton then
