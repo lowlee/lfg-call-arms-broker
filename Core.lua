@@ -112,7 +112,10 @@ function dataobj:OnClick(b)
 end
 
 local function isRandomDungeonDisplayable(id)
-	local name, typeID, minLevel, maxLevel, _, _, _, expansionLevel = GetLFGDungeonInfo(id);
+	local info = { GetLFGDungeonInfo(id) }
+	local minLevel = info[LFG_RETURN_VALUES.minLevel]
+	local maxLevel = info[LFG_RETURN_VALUES.maxLevel]
+	local expansionLevel = info[LFG_RETURN_VALUES.expansionLevel]
 	local myLevel = UnitLevel("player");
 	return myLevel >= minLevel and myLevel <= maxLevel and EXPANSION_LEVEL >= expansionLevel;
 end
