@@ -96,8 +96,7 @@ function dataobj:OnInitialize()
 	interfaceFrame.default = function() self:SetDefaultOptions() end
 
 	self:RegisterEvent("LFG_LOCK_INFO_RECEIVED", "UpdateText")
-	self:RegisterEvent("PARTY_MEMBERS_CHANGED", "GroupMakeupChanged")
-	self:RegisterEvent("RAID_ROSTER_UPDATE", "GroupMakeupChanged")
+	self:RegisterEvent("GROUP_ROSTER_UPDATE", "GroupMakeupChanged")
 
 	self:ScheduleRepeatingTimer(function() RequestLFDPlayerLockInfo() end, 60)
 	RequestLFDPlayerLockInfo()
@@ -210,12 +209,12 @@ end
 function dataobj:GroupMakeupChanged()
 	local groupType = currentGroupType()
 	if (groupType == GROUP_TYPE_NONE) ~= (self.group_type == GROUP_TYPE_NONE) then
+		if groupType ~= GROUP_TYPE_NONE then
+			-- Update immediately if we enter a party/raid
+			self:UpdateText();
+		end
 		RequestLFDPlayerLockInfo();
 	end
-end
-
-function dataobj:PARTY_MEMBERS_CHANGED()
-	self:UpdateText()
 end
 
 local TANK_ICON = calculateTexture("TANK", 12)
