@@ -121,9 +121,9 @@ local function isRandomDungeonDisplayable(id)
 end
 
 local function currentGroupType()
-	if GetNumRaidMembers() >= 1 then
+	if IsInRaid() then
 		return GROUP_TYPE_RAID
-	elseif GetNumPartyMembers() > 0 then
+	elseif GetNumSubgroupMembers() > 0 then
 		return GROUP_TYPE_PARTY
 	else
 		return GROUP_TYPE_NONE
