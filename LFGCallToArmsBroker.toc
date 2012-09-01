@@ -2,7 +2,7 @@
 ## Title : LFG Call to Arms Broker
 ## Name: LFGCalltoArmsBroker
 ## Author: Buranshe
-## Version: 1.0.3a2
+## Version: 1.0.3a3
 ## SavedVariables: LFGCallToArmsBrokerDB
 
 ## Notes: Provides a quick display for the LFG Call to Arms
