@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 70100
 ## Title : LFG Call to Arms Broker
 ## Name: LFGCalltoArmsBroker
-## Author: Buranshe
-## Version: 1.0.7
+## Author: Eridius
+## Version: 1.0.8
 ## SavedVariables: LFGCallToArmsBrokerDB
 
 ## Notes: Provides a quick display for the LFG Call to Arms
