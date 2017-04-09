@@ -121,9 +121,9 @@ end
 
 -- add function to determine is the LFR is displayable
 local function isRandomRaidDisplayable(id)
-	local dungeonID, name, typeID, subtype, minLevel, maxLevel, recLevel, minRecLevel, maxRecLevel, expansionId, groupId, texture, difficultyID, numPlayers, description, isHoliday, bonusRepAmount, isTimeWalker, name2, minGearLevel = GetRFDungeonInfo(id)
+	local _, _, _, _, minLevel, maxLevel, _, _, _, expansionId, _, _, _, _, _, _, _, _, _, _, minGearLevel = GetRFDungeonInfo(id)
 	local myLevel = UnitLevel("player")
-	local avgItemLevel, avgItemLevelEquipped = GetAverageItemLevel()
+	local avgItemLevel = GetAverageItemLevel()
 	return myLevel >= minLevel and myLevel <= maxLevel and EXPANSION_LEVEL >= expansionId and avgItemLevel >= minGearLevel;
 end
 
