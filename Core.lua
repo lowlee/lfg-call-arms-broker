@@ -119,6 +119,14 @@ local function isRandomDungeonDisplayable(id)
 	return myLevel >= minLevel and myLevel <= maxLevel and EXPANSION_LEVEL >= expansionLevel;
 end
 
+-- add function to determine is the LFR is displayable
+local function isRandomRaidDisplayable(id)
+	local dungeonID, name, typeID, subtype, minLevel, maxLevel, recLevel, minRecLevel, maxRecLevel, expansionId, groupId, texture, difficultyID, numPlayers, description, isHoliday, bonusRepAmount, isTimeWalker, name2, minGearLevel = GetRFDungeonInfo(id)
+	local myLevel = UnitLevel("player")
+	local avgItemLevel, avgItemLevelEquipped = GetAverageItemLevel()
+	return myLevel >= minLevel and myLevel <= maxLevel and EXPANSION_LEVEL >= expansionId and avgItemLevel >= minGearLevel;
+end
+
 local function currentGroupType()
 	if IsInRaid() then
 		return GROUP_TYPE_RAID
@@ -169,6 +177,36 @@ function dataobj:UpdateText()
 				end
 			end
 		end
+
+		-- Add code to loop through LFR intances
+		for index = 1, GetNumRFDungeons() do
+			local rfId, rfName = GetRFDungeonInfo(index);
+			if isRandomRaidDisplayable(index) then
+				local raidInfo = {}
+				for i=1, LFG_ROLE_NUM_SHORTAGE_TYPES do
+					local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(rfId, i);
+					if eligible and (itemCount ~= 0 or money ~= 0 or xp ~= 0) then
+						if forTank then
+							hasTank = true
+							raidInfo.tank = true
+						end
+						if forHealer then
+							hasHeal = true
+							raidInfo.heal = true
+						end
+						if forDamage then
+							hasDPS = true
+							raidInfo.dps = true
+						end
+					end
+				end
+				if next(raidInfo) then
+					raidInfo.name = rfName
+					table.insert(self.lfginfo, raidInfo)
+				end
+			end
+		end
+
 		local textures = {}
 		local shouldPlaySound = false
 		if hasTank and self.db.char.roles.tank then
